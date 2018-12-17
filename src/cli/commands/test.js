@@ -315,7 +315,11 @@ function displayResult(res, options) {
         ? createRemediationText(vuln, packageManager)
         : '',
       fixedIn: options.docker ? createFixedInText(vuln) : '',
+      dockerfilePackage: options.docker && vuln.dockerfileInstruction
+        ? `\n  Introduced in your Dockerfile by '${ vuln.dockerfileInstruction }'`
+        : `\n  Introduced by your base image (${ res.docker.baseImage })`,
     };
+
     return (
       vulnOutput.issueHeading + '\n' +
       vulnOutput.description + '\n' +
@@ -325,7 +329,8 @@ function displayResult(res, options) {
       // Optional - not always there
       vulnOutput.remediationInfo +
       vulnOutput.fixedIn +
-      vulnOutput.extraInfo
+      vulnOutput.extraInfo +
+      vulnOutput.dockerfilePackage
     );
   });
 
@@ -561,6 +566,7 @@ function groupVulnerabilities(vulns) {
       map[curr.id].note = curr.note;
       map[curr.id].severity = curr.severity;
       map[curr.id].isNew = isNewVuln(curr);
+      map[curr.id].dockerfileInstruction = curr.dockerfileInstruction;
     }
     if (curr.upgradePath) {
       curr.isOutdated = curr.upgradePath[1] === curr.from[1];
